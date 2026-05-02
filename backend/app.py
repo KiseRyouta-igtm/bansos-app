@@ -52,6 +52,9 @@ def init_db():
     conn.commit()
     conn.close()
 
+def cek_admin():
+    return session.get('role') == 'admin'
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
