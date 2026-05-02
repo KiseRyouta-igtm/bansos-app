@@ -52,47 +52,6 @@ def init_db():
     conn.commit()
     conn.close()
 
-def cek_login():
-    return 'login' in session
-
-def cek_admin():
-    return session.get('role') == 'admin'
-
-@app.route('/login', methods=['GET','POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-
-        conn = get_db()
-        user = conn.execute(
-            "SELECT * FROM user WHERE username=?",
-            (username,)
-        ).fetchone()
-        conn.close()
-
-        if user and check_password_hash(user['password'], password):
-            session['login'] = True
-            session['username'] = user['username']
-            session['role'] = user['role']
-            return redirect('/')
-        else:
-            return render_template("login.html", error="Login gagal!")
-
-    return render_template("login.html")
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect('/login')
-
-@app.route('/')
-def index():
-    if not cek_login():
-        return redirect('/login')
-
-    return "Dashboard"
-
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
