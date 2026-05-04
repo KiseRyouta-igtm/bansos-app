@@ -52,6 +52,27 @@ def init_db():
     conn.commit()
     conn.close()
 
+def cek_admin():
+    return session.get('role') == 'admin'
+
+@app.route('/hapus/<int:id>')
+def hapus(id):
+
+    if not cek_admin():
+        return "Akses ditolak!"
+
+    conn = get_db()
+
+    conn.execute(
+        "DELETE FROM penerima WHERE id=?",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/')
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
