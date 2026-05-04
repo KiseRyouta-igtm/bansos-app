@@ -55,6 +55,24 @@ def init_db():
 def cek_admin():
     return session.get('role') == 'admin'
 
+@app.route('/update/<int:id>')
+def update(id):
+
+    if not cek_admin():
+        return "Akses ditolak!"
+
+    conn = get_db()
+
+    conn.execute(
+        "UPDATE penerima SET status='Sudah Disalurkan' WHERE id=?",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/')
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
