@@ -55,8 +55,8 @@ def init_db():
 def cek_admin():
     return session.get('role') == 'admin'
 
-@app.route('/update/<int:id>')
-def update(id):
+@app.route('/hapus/<int:id>')
+def hapus(id):
 
     if not cek_admin():
         return "Akses ditolak!"
@@ -64,7 +64,7 @@ def update(id):
     conn = get_db()
 
     conn.execute(
-        "UPDATE penerima SET status='Sudah Disalurkan' WHERE id=?",
+        "DELETE FROM penerima WHERE id=?",
         (id,)
     )
 
