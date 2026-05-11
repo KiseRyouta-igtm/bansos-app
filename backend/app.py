@@ -71,6 +71,30 @@ def index():
         data=data
     )
 
+@app.route('/tambah', methods=['GET','POST'])
+def tambah():
+
+    if request.method == 'POST':
+
+        nama = request.form['nama']
+        nik = request.form['nik']
+        alamat = request.form['alamat']
+        jenis = request.form['jenis']
+
+        conn = get_db()
+
+        conn.execute(
+            "INSERT INTO penerima VALUES (NULL,?,?,?,?,?)",
+            (nama, nik, alamat, jenis, "Belum Disalurkan")
+        )
+
+        conn.commit()
+        conn.close()
+
+        return redirect('/')
+
+    return render_template("tambah.html")
+
 @app.route('/hapus/<int:id>')
 def hapus(id):
 
