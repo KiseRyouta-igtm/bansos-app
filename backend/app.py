@@ -83,6 +83,14 @@ def tambah():
 
         conn = get_db()
 
+        cek = conn.execute(
+            "SELECT * FROM penerima WHERE nik=?",
+            (nik,)
+        ).fetchone()
+
+        if cek:
+            return "NIK sudah terdaftar!"
+
         conn.execute(
             "INSERT INTO penerima VALUES (NULL,?,?,?,?,?)",
             (nama, nik, alamat, jenis, "Belum Disalurkan")
