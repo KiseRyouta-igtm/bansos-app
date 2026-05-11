@@ -55,6 +55,54 @@ def init_db():
 def cek_admin():
     return session.get('role') == 'admin'
 
+@app.route('/')
+def index():
+
+    conn = get_db()
+
+    data = conn.execute(
+        "SELECT * FROM penerima"
+    ).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "index.html",
+        data=data
+    )
+
+@app.route('/tambah', methods=['GET','POST'])
+def tambah():
+
+    if request.method == 'POST':
+
+        nama = request.form['nama']
+        nik = request.form['nik']
+        alamat = request.form['alamat']
+        jenis = request.form['jenis']
+
+        conn = get_db()
+
+        cek = conn.execute(
+            "SELECT * FROM penerima WHERE nik=?",
+            (nik,)
+        ).fetchone()
+
+        if cek:
+            return "NIK sudah terdaftar!"
+
+        conn.execute(
+            "INSERT INTO penerima VALUES (NULL,?,?,?,?,?)",
+            (nama, nik, alamat, jenis, "Belum Disalurkan")
+        )
+
+        conn.commit()
+        conn.close()
+
+        return redirect('/')
+
+    return render_template("tambah.html")
+
 @app.route('/hapus/<int:id>')
 def hapus(id):
 
