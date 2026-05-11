@@ -55,6 +55,22 @@ def init_db():
 def cek_admin():
     return session.get('role') == 'admin'
 
+@app.route('/')
+def index():
+
+    conn = get_db()
+
+    data = conn.execute(
+        "SELECT * FROM penerima"
+    ).fetchall()
+
+    conn.close()
+
+    return render_template(
+        "index.html",
+        data=data
+    )
+
 @app.route('/hapus/<int:id>')
 def hapus(id):
 
