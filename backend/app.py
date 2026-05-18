@@ -58,6 +58,8 @@ def cek_admin():
 @app.route('/')
 def index():
 
+    keyword = request.args.get('q')
+
     conn = get_db()
 
     data = conn.execute(
