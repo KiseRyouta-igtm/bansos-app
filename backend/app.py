@@ -58,11 +58,22 @@ def cek_admin():
 @app.route('/')
 def index():
 
+    keyword = request.args.get('q')
+
     conn = get_db()
 
-    data = conn.execute(
-        "SELECT * FROM penerima"
-    ).fetchall()
+    if keyword:
+
+        data = conn.execute(
+            "SELECT * FROM penerima WHERE nama LIKE ? OR nik LIKE ?",
+            (f'%{keyword}%', f'%{keyword}%')
+        ).fetchall()
+
+    else:
+
+        data = conn.execute(
+            "SELECT * FROM penerima"
+        ).fetchall()
 
     conn.close()
 
