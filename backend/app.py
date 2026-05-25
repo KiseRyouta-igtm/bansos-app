@@ -52,85 +52,21 @@ def init_db():
     conn.commit()
     conn.close()
 
-def cek_admin():
-    return session.get('role') == 'admin'
-
-@app.route('/')
-def index():
-
-    keyword = request.args.get('q')
+@app.route('/laporan')
+def laporan():
 
     conn = get_db()
 
-    if keyword:
-
-        data = conn.execute(
-            "SELECT * FROM penerima WHERE nama LIKE ? OR nik LIKE ?",
-            (f'%{keyword}%', f'%{keyword}%')
-        ).fetchall()
-
-    else:
-
-        data = conn.execute(
-            "SELECT * FROM penerima"
-        ).fetchall()
+    data = conn.execute(
+        "SELECT * FROM penerima"
+    ).fetchall()
 
     conn.close()
 
     return render_template(
-        "index.html",
+        "laporan.html",
         data=data
     )
-
-@app.route('/tambah', methods=['GET','POST'])
-def tambah():
-
-    if request.method == 'POST':
-
-        nama = request.form['nama']
-        nik = request.form['nik']
-        alamat = request.form['alamat']
-        jenis = request.form['jenis']
-
-        conn = get_db()
-
-        cek = conn.execute(
-            "SELECT * FROM penerima WHERE nik=?",
-            (nik,)
-        ).fetchone()
-
-        if cek:
-            return "NIK sudah terdaftar!"
-
-        conn.execute(
-            "INSERT INTO penerima VALUES (NULL,?,?,?,?,?)",
-            (nama, nik, alamat, jenis, "Belum Disalurkan")
-        )
-
-        conn.commit()
-        conn.close()
-
-        return redirect('/')
-
-    return render_template("tambah.html")
-
-@app.route('/hapus/<int:id>')
-def hapus(id):
-
-    if not cek_admin():
-        return "Akses ditolak!"
-
-    conn = get_db()
-
-    conn.execute(
-        "DELETE FROM penerima WHERE id=?",
-        (id,)
-    )
-
-    conn.commit()
-    conn.close()
-
-    return redirect('/')
 
 if __name__ == '__main__':
     init_db()
