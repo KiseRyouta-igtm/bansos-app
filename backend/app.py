@@ -61,11 +61,16 @@ def laporan():
         "SELECT * FROM penerima"
     ).fetchall()
 
+    total = conn.execute(
+        "SELECT COUNT(*) FROM penerima"
+    ).fetchone()[0]
+
     conn.close()
 
     return render_template(
         "laporan.html",
-        data=data
+        data=data,
+        total=total
     )
 
 if __name__ == '__main__':
