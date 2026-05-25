@@ -65,12 +65,22 @@ def laporan():
         "SELECT COUNT(*) FROM penerima"
     ).fetchone()[0]
 
+    sudah = conn.execute(
+        "SELECT COUNT(*) FROM penerima WHERE status='Sudah Disalurkan'"
+    ).fetchone()[0]
+
+    belum = conn.execute(
+        "SELECT COUNT(*) FROM penerima WHERE status='Belum Disalurkan'"
+    ).fetchone()[0]
+
     conn.close()
 
     return render_template(
         "laporan.html",
         data=data,
-        total=total
+        total=total,
+        sudah=sudah,
+        belum=belum
     )
 
 if __name__ == '__main__':
