@@ -94,6 +94,12 @@ def download():
 
     conn.close()
 
+    def generate():
+        yield 'Nama,NIK,Alamat,Jenis,Status\n'
+
+        for d in data:
+            yield f"{d['nama']},{d['nik']},{d['alamat']},{d['jenis_bantuan']},{d['status']}\n"
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
