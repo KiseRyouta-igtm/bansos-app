@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, Response
 import sqlite3
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -6,7 +6,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "database.db")
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder='../frontend/templates',
+    static_folder='../frontend/static'
+)
+
 app.secret_key = "secret123"
 
 def get_db():
@@ -81,6 +86,31 @@ def laporan():
         total=total,
         sudah=sudah,
         belum=belum
+    )
+
+@app.route('/download')
+def download():
+
+    conn = get_db()
+
+    data = conn.execute(
+        "SELECT * FROM penerima"
+    ).fetchall()
+
+    conn.close()
+
+    def generate():
+        yield 'Nama,NIK,Alamat,Jenis,Status\n'
+
+        for d in data:
+            yield f"{d['nama']},{d['nik']},{d['alamat']},{d['jenis_bantuan']},{d['status']}\n"
+
+    return Response(
+        generate(),
+        mimetype='text/csv',
+        headers={
+            "Content-Disposition": "attachment; filename=laporan.csv"
+        }
     )
 
 if __name__ == '__main__':
