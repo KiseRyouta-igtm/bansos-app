@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, Response
 import sqlite3
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
