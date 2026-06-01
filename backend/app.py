@@ -100,6 +100,14 @@ def download():
         for d in data:
             yield f"{d['nama']},{d['nik']},{d['alamat']},{d['jenis_bantuan']},{d['status']}\n"
 
+    return Response(
+        generate(),
+        mimetype='text/csv',
+        headers={
+            "Content-Disposition": "attachment; filename=laporan.csv"
+        }
+    )
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
