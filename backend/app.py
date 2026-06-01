@@ -8,7 +8,8 @@ DB_PATH = os.path.join(BASE_DIR, "database.db")
 
 app = Flask(
     __name__,
-    template_folder='../frontend/templates'
+    template_folder='../frontend/templates',
+    static_folder='../frontend/static'
 )
 
 app.secret_key = "secret123"
