@@ -83,6 +83,17 @@ def laporan():
         belum=belum
     )
 
+@app.route('/download')
+def download():
+
+    conn = get_db()
+
+    data = conn.execute(
+        "SELECT * FROM penerima"
+    ).fetchall()
+
+    conn.close()
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
