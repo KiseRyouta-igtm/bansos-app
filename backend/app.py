@@ -63,6 +63,69 @@ def cek_admin():
 def cek_petugas():
     return session.get('role') == 'petugas'
 
+@app.route('/tambah', methods=['GET', 'POST'])
+def tambah():
+
+    if not cek_admin():
+        return "Akses ditolak!"
+
+    if request.method == 'POST':
+
+        nama = request.form['nama']
+        nik = request.form['nik']
+        alamat = request.form['alamat']
+        jenis = request.form['jenis']
+
+        conn = get_db()
+
+        conn.execute(
+            "INSERT INTO penerima (nama, nik, alamat, jenis_bantuan, status) VALUES (?,?,?,?,?)",
+            (nama, nik, alamat, jenis, "Belum Disalurkan")
+        )
+
+        conn.commit()
+        conn.close()
+
+        return redirect('/')
+
+    return render_template('tambah.html')
+
+@app.route('/update/<int:id>')
+def update(id):
+
+    if not cek_petugas():
+        return "Akses ditolak!"
+
+    conn = get_db()
+
+    conn.execute(
+        "UPDATE penerima SET status='Sudah Disalurkan' WHERE id=?",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/')
+
+@app.route('/hapus/<int:id>')
+def hapus(id):
+
+    if not cek_admin():
+        return "Akses ditolak!"
+
+    conn = get_db()
+
+    conn.execute(
+        "DELETE FROM penerima WHERE id=?",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/')
+
 @app.route('/laporan')
 def laporan():
 
