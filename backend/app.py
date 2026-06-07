@@ -108,6 +108,24 @@ def update(id):
 
     return redirect('/')
 
+@app.route('/hapus/<int:id>')
+def hapus(id):
+
+    if not cek_admin():
+        return "Akses ditolak!"
+
+    conn = get_db()
+
+    conn.execute(
+        "DELETE FROM penerima WHERE id=?",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/')
+
 @app.route('/laporan')
 def laporan():
 
