@@ -57,6 +57,12 @@ def init_db():
     conn.commit()
     conn.close()
 
+def cek_admin():
+    return session.get('role') == 'admin'
+
+def cek_petugas():
+    return session.get('role') == 'petugas'
+
 @app.route('/laporan')
 def laporan():
 
