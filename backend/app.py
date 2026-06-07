@@ -90,6 +90,24 @@ def tambah():
 
     return render_template('tambah.html')
 
+@app.route('/update/<int:id>')
+def update(id):
+
+    if not cek_petugas():
+        return "Akses ditolak!"
+
+    conn = get_db()
+
+    conn.execute(
+        "UPDATE penerima SET status='Sudah Disalurkan' WHERE id=?",
+        (id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+    return redirect('/')
+
 @app.route('/laporan')
 def laporan():
 
