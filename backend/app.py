@@ -14,7 +14,6 @@ app = Flask(
 
 app.secret_key = "secret123"
 
-# ================= DATABASE =================
 def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
@@ -59,16 +58,12 @@ def init_db():
     conn.commit()
     conn.close()
 
-
-# ================= ROLE CHECK =================
 def cek_admin():
     return session.get('role') == 'admin'
 
 def cek_petugas():
     return session.get('role') == 'petugas'
 
-
-# ================= LOGIN =================
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 
@@ -99,15 +94,11 @@ def login():
 
     return render_template('login.html', error=error)
 
-
-# ================= LOGOUT =================
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/login')
 
-
-# ================= DASHBOARD =================
 @app.route('/')
 def index():
 
@@ -134,8 +125,6 @@ def index():
         role=session['role']
     )
 
-
-# ================= TAMBAH DATA =================
 @app.route('/tambah', methods=['GET', 'POST'])
 def tambah():
 
@@ -163,8 +152,6 @@ def tambah():
 
     return render_template('tambah.html')
 
-
-# ================= UPDATE STATUS =================
 @app.route('/update/<int:id>')
 def update(id):
 
@@ -183,8 +170,6 @@ def update(id):
 
     return redirect('/')
 
-
-# ================= HAPUS =================
 @app.route('/hapus/<int:id>')
 def hapus(id):
 
@@ -203,8 +188,6 @@ def hapus(id):
 
     return redirect('/')
 
-
-# ================= LAPORAN =================
 @app.route('/laporan')
 def laporan():
 
@@ -232,8 +215,6 @@ def laporan():
         belum=belum
     )
 
-
-# ================= DOWNLOAD CSV =================
 @app.route('/download')
 def download():
 
@@ -252,8 +233,6 @@ def download():
         headers={"Content-Disposition": "attachment; filename=laporan.csv"}
     )
 
-
-# ================= RUN =================
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
