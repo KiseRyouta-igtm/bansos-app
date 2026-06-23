@@ -19,6 +19,7 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+
 def init_db():
     conn = get_db()
 
@@ -62,6 +63,67 @@ def cek_admin():
 
 def cek_petugas():
     return session.get('role') == 'petugas'
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+
+    error = None
+
+    if request.method == 'POST':
+
+        username = request.form['username']
+        password = request.form['password']
+
+        conn = get_db()
+
+        user = conn.execute(
+            "SELECT * FROM user WHERE username=?",
+            (username,)
+        ).fetchone()
+
+        conn.close()
+
+        if user and check_password_hash(user['password'], password):
+
+            session['username'] = user['username']
+            session['role'] = user['role']
+
+            return redirect('/')
+
+        error = "Username atau password salah"
+
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/login')
+
+@app.route('/')
+def index():
+
+    if 'username' not in session:
+        return redirect('/login')
+
+    conn = get_db()
+
+    q = request.args.get('q')
+
+    if q:
+        data = conn.execute(
+            "SELECT * FROM penerima WHERE nama LIKE ? OR nik LIKE ?",
+            (f"%{q}%", f"%{q}%")
+        ).fetchall()
+    else:
+        data = conn.execute("SELECT * FROM penerima").fetchall()
+
+    conn.close()
+
+    return render_template(
+        'index.html',
+        data=data,
+        role=session['role']
+    )
 
 @app.route('/tambah', methods=['GET', 'POST'])
 def tambah():
@@ -131,13 +193,9 @@ def laporan():
 
     conn = get_db()
 
-    data = conn.execute(
-        "SELECT * FROM penerima"
-    ).fetchall()
+    data = conn.execute("SELECT * FROM penerima").fetchall()
 
-    total = conn.execute(
-        "SELECT COUNT(*) FROM penerima"
-    ).fetchone()[0]
+    total = conn.execute("SELECT COUNT(*) FROM penerima").fetchone()[0]
 
     sudah = conn.execute(
         "SELECT COUNT(*) FROM penerima WHERE status='Sudah Disalurkan'"
@@ -161,25 +219,18 @@ def laporan():
 def download():
 
     conn = get_db()
-
-    data = conn.execute(
-        "SELECT * FROM penerima"
-    ).fetchall()
-
+    data = conn.execute("SELECT * FROM penerima").fetchall()
     conn.close()
 
     def generate():
         yield 'Nama,NIK,Alamat,Jenis,Status\n'
-
         for d in data:
             yield f"{d['nama']},{d['nik']},{d['alamat']},{d['jenis_bantuan']},{d['status']}\n"
 
     return Response(
         generate(),
         mimetype='text/csv',
-        headers={
-            "Content-Disposition": "attachment; filename=laporan.csv"
-        }
+        headers={"Content-Disposition": "attachment; filename=laporan.csv"}
     )
 
 if __name__ == '__main__':
