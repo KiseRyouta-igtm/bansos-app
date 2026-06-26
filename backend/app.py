@@ -2,9 +2,16 @@ from flask import Flask, render_template, request, redirect, session, Response
 import sqlite3
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
+import uuid
+from werkzeug.utils import secure_filename
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "database.db")
+
+FRONTEND_DIR = os.path.abspath(os.path.join(BASE_DIR, "..", "frontend"))
+UPLOAD_FOLDER = os.path.join(FRONTEND_DIR, "static", "uploads")
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 app = Flask(
     __name__,
@@ -12,6 +19,7 @@ app = Flask(
     static_folder='../frontend/static'
 )
 
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = "secret123"
 
 def get_db():
@@ -30,7 +38,13 @@ def init_db():
             nik TEXT,
             alamat TEXT,
             jenis_bantuan TEXT,
-            status TEXT
+            status TEXT,
+            pendapatan INTEGER,
+            pekerjaan TEXT,
+            usia INTEGER,
+            lansia TEXT,
+            foto_ktp TEXT,
+            foto_rumah TEXT
         )
     ''')
 
@@ -64,6 +78,7 @@ def cek_admin():
 def cek_petugas():
     return session.get('role') == 'petugas'
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 
@@ -94,10 +109,12 @@ def login():
 
     return render_template('login.html', error=error)
 
+
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect('/login')
+
 
 @app.route('/')
 def index():
@@ -107,15 +124,7 @@ def index():
 
     conn = get_db()
 
-    q = request.args.get('q')
-
-    if q:
-        data = conn.execute(
-            "SELECT * FROM penerima WHERE nama LIKE ? OR nik LIKE ?",
-            (f"%{q}%", f"%{q}%")
-        ).fetchall()
-    else:
-        data = conn.execute("SELECT * FROM penerima").fetchall()
+    data = conn.execute("SELECT * FROM penerima").fetchall()
 
     conn.close()
 
@@ -137,13 +146,57 @@ def tambah():
         nik = request.form['nik']
         alamat = request.form['alamat']
         jenis = request.form['jenis']
+        pendapatan = request.form['pendapatan']
+        pekerjaan = request.form['pekerjaan']
+        usia = int(request.form['usia'])
+
+        if usia >= 60:
+            lansia = "Ya"
+        else:
+            lansia = "Tidak"
+
+        foto_ktp = request.files['foto_ktp']
+        foto_rumah = request.files['foto_rumah']
+
+        ktp_name = str(uuid.uuid4()) + "_" + secure_filename(foto_ktp.filename)
+        rumah_name = str(uuid.uuid4()) + "_" + secure_filename(foto_rumah.filename)
+
+        foto_ktp.save(os.path.join(app.config['UPLOAD_FOLDER'], ktp_name))
+        foto_rumah.save(os.path.join(app.config['UPLOAD_FOLDER'], rumah_name))
 
         conn = get_db()
 
-        conn.execute(
-            "INSERT INTO penerima (nama, nik, alamat, jenis_bantuan, status) VALUES (?,?,?,?,?)",
-            (nama, nik, alamat, jenis, "Belum Disalurkan")
-        )
+        conn.execute("""
+            INSERT INTO penerima
+            (
+                nama,
+                nik,
+                alamat,
+                jenis_bantuan,
+                status,
+                pendapatan,
+                pekerjaan,
+                usia,
+                lansia,
+                foto_ktp,
+                foto_rumah
+            )
+            VALUES
+            (?,?,?,?,?,?,?,?,?,?,?)
+        """,
+        (
+            nama,
+            nik,
+            alamat,
+            jenis,
+            "Belum Disalurkan",
+            pendapatan,
+            pekerjaan,
+            usia,
+            lansia,
+            ktp_name,
+            rumah_name
+        ))
 
         conn.commit()
         conn.close()
@@ -214,6 +267,26 @@ def laporan():
         sudah=sudah,
         belum=belum
     )
+
+@app.route('/detail/<int:id>')
+def detail(id):
+
+    if 'username' not in session:
+        return redirect('/login')
+
+    conn = get_db()
+
+    data = conn.execute(
+        "SELECT * FROM penerima WHERE id=?",
+        (id,)
+    ).fetchone()
+
+    conn.close()
+
+    if data is None:
+        return "Data tidak ditemukan"
+
+    return render_template("detail.html", data=data)
 
 @app.route('/download')
 def download():
