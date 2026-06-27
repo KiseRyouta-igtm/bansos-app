@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Laporan Bantuan Sosial</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="container mt-4">
+
+<h2 class="text-primary mb-4">
+    Laporan Bantuan Sosial
+</h2>
+
+<div class="mb-3">
+    <a href="/" class="btn btn-secondary">
+        Kembali
+    </a>
+
+    <a href="/download" class="btn btn-success">
+        Download CSV
+    </a>
+</div>
+
+<!-- Statistik -->
+
+<div class="row mb-4">
+
+    <div class="col-md-4">
+        <div class="card text-center p-3">
+            <h5>Total Data</h5>
+            <h2>{{ total }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-center bg-success text-white p-3">
+            <h5>Sudah Disalurkan</h5>
+            <h2>{{ sudah }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card text-center bg-danger text-white p-3">
+            <h5>Belum Disalurkan</h5>
+            <h2>{{ belum }}</h2>
+        </div>
+    </div>
+
+</div>
+
+<!-- Grafik -->
+
+<div class="card p-3 mb-4">
+
+    <canvas id="chartBansos"></canvas>
+
+</div>
+
+<!-- Tabel -->
+
+<table class="table table-bordered table-striped align-middle">
+
+    <thead class="table-dark">
+
+        <tr>
+
+            <th>Nama</th>
+            <th>NIK</th>
+            <th>Alamat</th>
+            <th>Jenis</th>
+            <th>Pendapatan</th>
+            <th>Pekerjaan</th>
+            <th>Usia</th>
+            <th>Lansia</th>
+            <th>Foto KTP</th>
+            <th>Foto Rumah</th>
+            <th>Status</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+    {% for d in data %}
+
+    <tr>
+
+        <td>{{ d.nama }}</td>
+
+        <td>{{ d.nik }}</td>
+
+        <td>{{ d.alamat }}</td>
+
+        <td>{{ d.jenis_bantuan }}</td>
+
+        <td>Rp {{ "{:,}".format(d.pendapatan).replace(",", ".") }}</td>
+
+        <td>{{ d.pekerjaan }}</td>
+
+        <td>{{ d.usia }} Tahun</td>
+
+        <td>
+
+            {% if d.lansia == "Ya" %}
+
+                <span class="badge bg-info">
+                    Lansia
+                </span>
+
+            {% else %}
+
+                <span class="badge bg-secondary">
+                    Tidak
+                </span>
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {% if d.foto_ktp %}
+
+                <img src="{{ url_for('static', filename='uploads/' + d.foto_ktp) }}"
+                     width="80"
+                     class="img-thumbnail">
+
+            {% else %}
+
+                -
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {% if d.foto_rumah %}
+
+                <img src="{{ url_for('static', filename='uploads/' + d.foto_rumah) }}"
+                     width="80"
+                     class="img-thumbnail">
+
+            {% else %}
+
+                -
+
+            {% endif %}
+
+        </td>
+
+        <td>
+
+            {% if d.status == "Sudah Disalurkan" %}
+
+                <span class="badge bg-success">
+                    Sudah Disalurkan
+                </span>
+
+            {% else %}
+
+                <span class="badge bg-danger">
+                    Belum Disalurkan
+                </span>
+
+            {% endif %}
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+    </tbody>
+
+</table>
+
+<script>
+window.onload = function () {
+
+    const total = Number("{{ total }}");
+    const sudah = Number("{{ sudah }}");
+    const belum = Number("{{ belum }}");
+
+    const ctx = document.getElementById("chartBansos").getContext("2d");
+
+    new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: [
+                "Total Data",
+                "Sudah Disalurkan",
+                "Belum Disalurkan"
+            ],
+            datasets: [{
+                label: "Jumlah Penerima",
+                data: [total, sudah, belum],
+                backgroundColor: [
+                    "#0d6efd",
+                    "#198754",
+                    "#dc3545"
+                ]
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+
+};
+
+</script>
+
+</body>
+</html>
